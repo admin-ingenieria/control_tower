@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Control Tower</title>
+    <link rel="shortcut icon" href="../assets/control-tower.png">
+    <link rel="stylesheet" href="../assets/panelCT.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.0/css/buttons.dataTables.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="row mt-5">
+        <h1 class="text-center">Panel Control Tower <img src="../assets/control-tower.png" style="width: 80px;">   <button class="btn btn-secondary text-center" onclick="location.reload()" title="Actualizar"><i class="fa fa-fw fa-rotate-right"></i></button></h1>
+    </div>
+    <div class="text-center">
+    <div class="row mt-4">
+      <div class="card p-4 col-md-4" id="data-1"></div>
+      <div class="card p-4 col-md-4" id="data-2"></div>
+      <div class="card p-4 col-md-4" id="data-3"></div>
+    </div>
+    <div class="row mt-2">
+      <div class="card p-4 col-md-6" id="data-ingesta"></div> 
+      <div class="card p-4 col-md-6" id="data-ingesta-bi"></div> 
+    </div>
+    <div class="row mt-2 p-5">
+      <h3 class="text-center">PROYECTOS INGENIERIA</h3>
+      <iframe width="600" height="500" frameborder="0" scrolling="no" src="https://falabella.sharepoint.com/sites/Ingeniera886/_layouts/15/Doc.aspx?sourcedoc={83557d05-20a7-4c8d-ae56-3be2c25177b9}&action=embedview&ActiveCell='APIS'!C1&wdHideGridlines=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edesNext=true&resen=false&ed1JS=false"></iframe>
+    </div>
+  </div>
+  </div>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  
+  <!--Estilos Boostrap 5-->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script src="https://cdn.datatables.net/1.11.1/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.1/js/dataTables.bootstrap4.min.js"></script>
+  <script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+  
+  <!--Scripts para excel,pdf,print-->
+  <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.print.min.js"></script>
+
+  <script src="../assets/panelCT.js"></script>
+  
+  <script>
+          window.addEventListener("load", (event) => {
+            template = `
+                <div>
+                  <img src= 'https://cdn.dribbble.com/users/107759/screenshots/2436386/media/9a15f02d7c68adaf9af951c97615076f.gif' width="200px" height="200px">
+                </div>
+                        `
+            $('#data-1').html(template);
+            $('#data-2').html(template);
+            $('#data-3').html(template);
+            $('#data-ingesta').html(template);
+            $('#data-ingesta-bi').html(template);
+            consultor_ingesta();
+            consultor_ingesta_bi();
+            consultor_cambio_estado();
+            consultor_robot_fbs();
+            consultor_inserciones_tms();
+          });
+            
+      function consultor_ingesta(){
+              axios.get('http://10.162.239.110:8010/consultor_ingesta')
+              .then(function (response) {
+              //console.log(response.data);
+                        template = "";
+                        template += "<h3 class='text-center'>INGESTA GCP</h3> "
+                        template += `
+                            <table class="table table-dark table-striped">
+                              <thead>
+                                <tr>
+                                <th>TABLA</th>
+                                <th>ÚLTIMA FECHA DE CARGA</th>
+                              </tr>
+                              </thead>
+                              <tbody>`;
+                        response.data.forEach(element => {
+                      template += `
+                      <tr>
+                          <td style="font-size:15px">${element['TABLA']}</td>
+                          <td style="font-size:15px">${element['FECHA_MAXIMA_CARGA']}</td>
+                      </tr>
+                      `;                    
+                        });
+                        template += `</tbody>`;
+                        template += `</table>`;
+                        $('#data-ingesta').html(template)
+                        $('#resultados').html('')
+              })
+              .catch(function (error) {
+              console.log(error);
+               })
+      .finally(function () {
+        // always executed
+      });
+            }
+        
+
+      function consultor_ingesta_bi(){
+          axios.get('http://10.162.239.110:8010/consultor_ingesta_bi')
+                      .then(function (response) {
+                      //console.log(response.data);
+                                template = "";
+                                template += "<h3 class='text-center'>INGESTA GCP BI</h3> "
+                                template += `
+                                    <table class="table table-dark table-striped">
+                                      <thead>
+                                        <tr>
+                                        <th>TABLA</th>
+                                        <th>ÚLTIMA FECHA DE CARGA</th>
+                                      </tr>
+                                      </thead>
+                                      <tbody>`;
+                                response.data.forEach(element => {
+                              template += `
+                              <tr>
+                                  <td style="font-size:15px">${element['TABLA']}</td>
+                                  <td style="font-size:15px">${element['FECHA_MAXIMA_CARGA']}</td>
+                              </tr>
+                              `;                    
+                                });
+                                template += `</tbody>`;
+                                template += `</table>`;
+                                $('#data-ingesta-bi').html(template)
+                                $('#resultados').html('')
+                      })
+                      .catch(function (error) {
+                      console.log(error);
+                      })
+              .finally(function () {
+                // always executed
+              });
+      }
+
+
+      function consultor_cambio_estado(){
+        axios.get('http://10.162.239.110:8010/consultor_cambio_estado')
+              .then(function (response) {
+              // console.log(response.data);
+                        template = ""
+                        response.data.forEach(element => {
+                            template += `
+                                 <h3 class="text-center">API CAMBIO DE ESTADO</h3>  
+                                 <table class="table table-dark table-striped">
+                                <tr>
+                                    <td><b>Último Registro:</b></td><td> ${element['ultimo_registro_zeus']}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Fecha Error Api:</b></td><td> ${element['ultima_fecha_error_api']}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Error Api:</b></td><td>${element['error_api']}</td>
+                                </tr>`
+                                if(element['error_api'] == 1) {
+                            template += ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:red;font-size: 30px;"></i></td>
+                                </tr>`
+                                }
+                                if(element['error_api'] == 0) {
+                            template += ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:green;font-size: 30px;"></i></td>
+                                </tr>`
+                              }
+                              `</table>
+                            `
+                        });
+                        $('#data-1').html(template)
+                        $('#resultados').html('')
+              })
+              .catch(function (error) {
+              console.log(error);
+               })
+      .finally(function () {
+        // always executed
+      });
+      }
+
+      
+      function consultor_robot_fbs(){
+        axios.get('http://10.162.239.110:8010/consultor_robot_fbs')
+              .then(function (response) {
+             // console.log(response.data);
+                        template = ""
+                        response.data.forEach(element => {
+                            template += `
+                                 <h3 class="text-center">BOT RECEPCIÓN FBS</h3>  
+                                 <table class="table table-dark table-striped">
+                                <tr>
+                                    <td><b>Pendientes:</b></td><td> ${element['pendientes']}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Última Fecha Registro Bot:</b></td><td> ${element['ultima_fecha_registro_bot']}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Última Fecha Registro Zeus:</b></td><td>${element['ultima_fecha_registro_zeus']}</td>
+                                </tr>`
+                                if(element['pendientes'] <= 500) {
+                                template += ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:green;font-size: 30px;"></i></td>
+                                </tr>`
+                                }
+                                if(element['pendientes'] >= 501 && element['pendientes'] <= 800) {
+                                template +=  ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:#ffc107;font-size: 30px;"></i></td>
+                                </tr>`
+                                }
+                                if(element['pendientes'] >= 801) {
+                                template +=  ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:red;font-size: 30px;"></i></td>
+                                </tr>`
+                                }
+                              `</table>
+                            `
+                        });
+                        $('#data-2').html(template)
+                        $('#resultados').html('')
+              })
+              .catch(function (error) {
+              console.log(error);
+               })
+      .finally(function () {
+        // always executed
+      });
+      }
+
+      
+      function consultor_inserciones_tms(){
+        axios.get('http://10.162.239.110:8010/consultor_inserciones_tms')
+              .then(function (response) {
+             // console.log(response.data);
+                        template = ""
+                        response.data.forEach(element => {
+                            template += `
+                                 <h3 class="text-center">ETL INSERCIONES TMS</h3>  
+                                 <table class="table table-dark table-striped">
+                                <tr>
+                                    <td><b>Pendientes:</b></td><td> ${element['pendientes']}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Última Fecha Api:</b></td><td> ${element['ultima_fecha_api']}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Última Fecha ETL:</b></td><td>${element['ultima_fecha_etl']}</td>
+                                </tr>`
+                                if(element['pendientes'] <= 8000) {
+                                template += ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:green;font-size: 30px;"></i></td>
+                                </tr>`
+                                }
+                                if(element['pendientes'] >= 8001 && element['pendientes'] <= 12000) {
+                                template +=  ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:#ffc107;font-size: 30px;"></i></td>
+                                </tr>`
+                                }
+                                if(element['pendientes'] >= 12001) {
+                                template +=  ` <tr>
+                                  <td><b>Estado:</b></td><td><i class="fa fa-fw fa-bell" style="color:red;font-size: 30px;"></i></td>
+                                </tr>`
+                                }
+                              `</table>
+                            `
+                        });
+                        $('#data-3').html(template)
+                        $('#resultados').html('')
+              })
+              .catch(function (error) {
+              console.log(error);
+               })
+      .finally(function () {
+        // always executed
+      });
+      }
+
+  
+      settim(consultor_cambio_estado,300000);
+      setInterval(consultor_robot_fbs,300000);
+      setInterval(consultor_inserciones_tms,300000);
+      setInterval(consultor_ingesta,900000);
+      setInterval(consultor_ingesta_bi,900000);
+
+  </script>
