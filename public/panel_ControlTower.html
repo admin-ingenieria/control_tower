@@ -26,6 +26,9 @@
       <div class="card p-4 col-md-6" id="data-ingesta"></div> 
       <div class="card p-4 col-md-6" id="data-ingesta-bi"></div> 
     </div>
+    <div class="row mt-2">
+      <div class="card p-4 col-md-12" id="data-4"></div> 
+    </div>
     <div class="row mt-2 p-5">
       <h3 class="text-center">PROYECTOS INGENIERIA</h3>
       <iframe width="600" height="500" frameborder="0" scrolling="no" src="https://falabella.sharepoint.com/sites/Ingeniera886/_layouts/15/Doc.aspx?sourcedoc={83557d05-20a7-4c8d-ae56-3be2c25177b9}&action=embedview&ActiveCell='APIS'!C1&wdHideGridlines=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True&edesNext=true&resen=false&ed1JS=false"></iframe>
@@ -70,6 +73,7 @@
             consultor_cambio_estado();
             consultor_robot_fbs();
             consultor_inserciones_tms();
+            consultor_pickup();
           });
             
       function consultor_ingesta(){
@@ -285,7 +289,44 @@
       }
 
   
-      settim(consultor_cambio_estado,300000);
+      function consultor_pickup(){
+        axios.get('http://10.162.239.110:8010/consultor_bot_pickup')
+              .then(function (response) {
+              // console.log(response.data);
+                template = "";
+                        template += "<h3 class='text-center'>BOT PICKUP</h3> "
+                        template += `
+                            <table class="table table-dark table-striped">
+                              <thead>
+                                <tr>
+                                <th>ARCHIVO REQUERIDO</th>
+                                <th>FECHA MODIFICACIÓN</th>
+                              </tr>
+                              </thead>
+                              <tbody>`;
+                        response.data.forEach(element => {
+                      template += `
+                      <tr>
+                          <td style="font-size:15px">${element['RUTA']}</td>
+                          <td style="font-size:15px">${element['FECHA_MODIFICACION']}</td>
+                      </tr>
+                      `;                    
+                        });
+                        template += `</tbody>`;
+                        template += `</table>`;
+                        $('#data-4').html(template)
+                        $('#resultados').html('')
+              })
+              .catch(function (error) {
+              console.log(error);
+               })
+      .finally(function () {
+        // always executed
+      });
+      }
+
+
+      setInterval(consultor_cambio_estado,300000);
       setInterval(consultor_robot_fbs,300000);
       setInterval(consultor_inserciones_tms,300000);
       setInterval(consultor_ingesta,900000);
