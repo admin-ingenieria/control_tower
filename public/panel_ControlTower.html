@@ -27,6 +27,9 @@
       <div class="card p-4 col-md-6" id="data-ingesta-bi"></div> 
     </div>
     <div class="row mt-2">
+      <div class="card p-4 col-md-12" id="data-ingesta-tms"></div> 
+    </div>
+    <div class="row mt-2">
       <div class="card p-4 col-md-12" id="data-4"></div> 
     </div>
     <div class="row mt-2 p-5">
@@ -67,6 +70,7 @@
             $('#data-2').html(template);
             $('#data-3').html(template);
             $('#data-4').html(template);
+            $('#data-ingesta-tms').html(template);
             $('#data-ingesta').html(template);
             $('#data-ingesta-bi').html(template);
             consultor_ingesta();
@@ -74,6 +78,7 @@
             consultor_cambio_estado();
             consultor_robot_fbs();
             consultor_inserciones_tms();
+            consultor_ingesta_tms();
             consultor_pickup();
           });
             
@@ -84,6 +89,7 @@
                         template = "";
                         template += "<h3 class='text-center'>INGESTA GCP</h3> "
                         template += `
+                        <div style="overflow-y:auto; height:200px;">
                             <table class="table table-dark table-striped">
                               <thead>
                                 <tr>
@@ -101,7 +107,7 @@
                       `;                    
                         });
                         template += `</tbody>`;
-                        template += `</table>`;
+                        template += `</table> </div>`;
                         $('#data-ingesta').html(template)
                         $('#resultados').html('')
               })
@@ -119,9 +125,10 @@
                       .then(function (response) {
                       //console.log(response.data);
                                 template = "";
-                                template += "<h3 class='text-center'>INGESTA GCP BI</h3> "
+                                template += "<h3 class='text-center'>INGESTA GCP BI </h3> "
                                 template += `
-                                    <table class="table table-dark table-striped">
+                                <div style="overflow-y:auto; height:200px;">
+                                    <table class="table table-dark table-striped" id="consultor_ingesta_bi">
                                       <thead>
                                         <tr>
                                         <th>TABLA</th>
@@ -138,9 +145,9 @@
                               `;                    
                                 });
                                 template += `</tbody>`;
-                                template += `</table>`;
-                                $('#data-ingesta-bi').html(template)
-                                $('#resultados').html('')
+                                template += `</table> </div>`;
+                                $('#data-ingesta-bi').html(template);
+                                $('#resultados').html('');
                       })
                       .catch(function (error) {
                       console.log(error);
@@ -289,7 +296,53 @@
       });
       }
 
-  
+
+      function consultor_ingesta_tms(){
+              axios.get('http://10.162.239.110:8010/consultor_ingesta_tms')
+              .then(function (response) {
+              //console.log(response.data);
+                        template = "";
+                        template += "<h3 class='text-center'>INGESTA GCP TMS </h3>"
+                        template += `
+                        <div style="overflow-y:auto; height:350px;">
+                            <table class="table table-dark table-striped" id="consultor_ingesta_tms">
+                              <thead>
+                                <tr>
+                                <th>TABLA</th>
+                                <th>ÚLTIMA FECHA DE CARGA</th>
+                                <th>FRECUENCIA CARGA (HORAS)</th>
+                                <th>VALIDACIÓN CARGA</th>
+                              </tr>
+                              </thead>
+                              <tbody>`;
+                        response.data.forEach(element => {
+                      template += `
+                      <tr>
+                          <td style="font-size:15px">${element['TABLA']}</td>
+                          <td style="font-size:15px">${element['FECHA_CARGA']}</td>
+                          <td style="font-size:15px">${element['FRECUENCIA_EJECUCION_HORAS']}</td>
+                          <td style="font-size:15px">${element['VALIDACION_CARGA']}</td>
+                      </tr>
+                      `;                    
+                        });
+                        template += `</tbody>`;
+                        template += `</table> </div>`;
+                        $('#data-ingesta-tms').html(template);
+                        $('#resultados').html('');
+                        /* var x = document.getElementById("consultor_ingesta_tms");
+                        var x_icon = document.getElementById("icon_tms");
+                        x.style.display = "none";
+                        x_icon.innerHTML = "<i class='fa fa-fw fa-eye-slash'></i>"; */
+              })
+              .catch(function (error) {
+              console.log(error);
+               })
+      .finally(function () {
+        // always executed
+      });
+            }
+
+
       function consultor_pickup(){
         axios.get('http://10.162.239.110:8010/consultor_bot_pickup')
               .then(function (response) {
@@ -326,11 +379,23 @@
       });
       }
 
+      function show_ingesta_tms() {
+        var x = document.getElementById("consultor_ingesta_tms");
+        var x_icon = document.getElementById("icon_tms");
+        if (x.style.display === "none") {
+            x.style.display = "";
+            x_icon.innerHTML = "<i class='fa fa-fw fa-eye'></i>"
+        } else {
+            x.style.display = "none";
+            x_icon.innerHTML = "<i class='fa fa-fw fa-eye-slash'></i>"
+        }
+      }
 
       setInterval(consultor_cambio_estado,300000);
       setInterval(consultor_robot_fbs,300000);
       setInterval(consultor_inserciones_tms,300000);
       setInterval(consultor_ingesta,900000);
       setInterval(consultor_ingesta_bi,900000);
+      setInterval(consultor_ingesta_tms,300000);
 
   </script>
